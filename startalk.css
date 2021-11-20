@@ -1,0 +1,50 @@
+/* how to select element */
+.status-bar {}
+
+.status-bar__column         // this is naming method = Block, Element, Modifier(BEM) ex: loginform__btn--inactive 
+
+.status-bar:first-child {}  or .status-bar:nth-child(3) {}
+
+.status-bar__column .fa-lock {}     // class name + class name
+
+/* css file can import other css like below */
+@import "reset.css";
+@import "components/status-bar.css";
+
+/* variable css : :root vairable -> declaring global css variables */
+:root {
+    --yellow: #feda4a;
+    --horizontal-space: 25px;
+    --main-border: 1px solid rgba(0, 0, 0, 0.3);
+    --grey-letter: rgba(0, 0, 0, 0.3);
+    --black: #2e363e;
+}
+
+/* keyframes example */
+@keyframes notificationAnimation {
+    0% {
+        transform: none;            
+    }
+    50% {
+        transform: translateY(-5px) rotateY(360deg);
+    }
+    100% {
+        transform: none;
+    }
+}
+.nav__notification {
+    position: absolute;
+    left: 10px;
+    top: -10px;
+    animation: notificationAnimation 2s ease-in-out infinite;
+}
+
+/* set up background image on element */
+.grogu {
+    background: url("../../img/grogu.jpeg");
+    background-size: cover;
+    background-position: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 30px;
+}
