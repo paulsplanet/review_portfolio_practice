@@ -48,3 +48,11 @@
     height: 80px;
     border-radius: 30px;
 }
+
+/* I can select placeholder too */
+.js-toDoForm input::placeholder { ... }
+
+/* select several elements together */
+.weather-now,
+.weather-24h__column,
+.weather-48h__column { ... }
