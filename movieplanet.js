@@ -32,8 +32,73 @@ const Navigation = function() {
                 <Switch>
                     <Route path="/" exact component={Home} />
                     <Route path="/tv" component={TV} />
+                    <Route path="/movie/:id" component={Detail} />      // /:id = this depends on the props
                     <Redirect from="*" to="/" />
                 </Switch>    
         </Router>
     )
 };
+        // then you Link tag to use a / link
+        /* withRouter & Link */
+import { Link, withRouter } from "react-router-dom";
+export default withRouter(({ location: { pathname }}) => (          //withRouter: can get access to history object's properties and the closest Route's match
+<Header>                                                            //withRouter will pass updated match, location, and history props to the wrapped component whenever it renders.              
+        <List>                                                      //example)   const { match, location, history } = this.props;
+            <Item current={pathname === "/"}>
+                <SLink to="/">Movies</SLink>                        // SLink is styled.Link``;
+            </Item>
+            <Item current={pathname === "/tv"}>
+                <SLink to="/tv">TV</SLink>
+            </Item>
+        </List>
+    </Header>
+));
+
+
+/* styled-componenet: global style */
+import { createGlobalStyle } from "styled-components";
+import reset from "styled-reset";
+const GlobalStyles = createGlobalStyle`
+    ${reset};
+    a{ . . . }
+    *{ box-sizing: border-box }
+    body{ . . . }
+`;
+    // then import GlobalStyles at App.js
+return (
+    <>
+        <GlobalStyles />                // apply global styles to below components
+        < . . . />
+        < . . . />
+    </>
+)
+
+
+/* styled-componenet: how to use props */
+const Text = styled.span`
+    color: ${props => props.color};             // this is how to receive prop value
+`;
+const Message = ({ text, color }) => (
+    <Container>
+        <Text color={color}>{text}</Text>       // this is how to pass prop value
+    </Container>
+);
+Message.propTypes = {
+    text: PropTypes.string.isRequired,          // this is checking types of props because it is required
+    color: PropTypes.string.isRequired,
+};
+
+
+/* styled-component: trasition at :hover */
+const ImageContainer = styled.div`
+    margin-bottom: 5px;
+    position: relative;
+    &:hover {
+        ${Image} {                  // Image & Rating are other styled-components
+            opacity: 0.3;               
+        };
+        ${Rating} {
+            opacity: 1;
+        }
+    }
+`;
