@@ -90,6 +90,9 @@ Message.propTypes = {
 
 
 /* styled-component: trasition at :hover */
+const Image = styled.div`
+transition: opacity 0.2s linear;
+`;
 const ImageContainer = styled.div`
     margin-bottom: 5px;
     position: relative;
@@ -102,3 +105,42 @@ const ImageContainer = styled.div`
         }
     }
 `;
+
+
+/* trim long sentence to short */
+<Title>{title.length > 18 ? `${title.substring(0, 18)}...` : title}</Title>
+
+
+/* using class component */
+export default class extends React.Component{
+    state = {
+        nowPlaying: null,
+        upcoming: null, popular: null, error: null, loading: true,
+    };
+
+    async componentDidMount() {                                                         // compoenentDidMount = excute when this page rendered
+        try{
+            const { data: { results: nowPlaying } } = await moviesApi.nowPlaying();
+            const { data: { results: upcoming } } = await moviesApi.upcoming();
+            const { data: { results: popular } } = await moviesApi.popular();
+            this.setState({                                                             // save the data on the state
+                nowPlaying,  upcoming,  popular,
+            })
+        } catch{
+            this.setState({
+                error: "Can't find movies information." })
+        } finally{
+            this.setState({
+                loading: false });
+        }
+    };
+
+    render() {                                                                          // use render() , not return()        
+        const { nowPlaying, upcoming, popular, error, loading } = this.state;
+        return (
+            <HomePresenter                                                              // bring data from state and give to children as props
+                nowPlaying={nowPlaying} upcoming={upcoming} popular={popular}  error={error}  loading={loading}
+            />
+        )
+    };
+}
