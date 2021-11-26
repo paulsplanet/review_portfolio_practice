@@ -174,9 +174,9 @@ export default class extends React.Component{
         try{
             if(isMovie) {
                 ({data: result} = await moviesApi.movieDetail(parsedId));   // this is set resut got from API. then override 'null' value result to result with data
-            } else {
-                ({data: result} = await tvApi.showDetail(parsedId));
-            }
+            } else {                                                        // this is destructuring. it is same as:   
+                ({data: result} = await tvApi.showDetail(parsedId));        //      const request = await tvAPI.showDetail(parsedId);
+            }                                                               //      result = request.data;
         } catch{
             this.setState({ error: "Can't find anything."})
         } finally{
@@ -191,3 +191,88 @@ export default class extends React.Component{
         )
     };
 }
+
+
+/* class component - how to give function as a prop to child */
+export default class extends React.Component{
+    state = {
+        movieResults: null,  tvResults: null, searchTerm: "", error: null, loading: false,
+    };
+    handleSubmit = (event) => {
+        event.preventDefault();
+        const { searchTerm } = this.state;
+        if(searchTerm !== ""){
+            this.searchByTerm();
+        }
+    };
+    updateTerm = (event) => {                               // set state 'searchTerm' when typing
+        const { target: { value } } = event;
+        this.setState({
+            searchTerm: value,
+        })
+    };
+    searchByTerm = async () => {
+        const { searchTerm } = this.state;
+        this.setState({
+            loading: true
+        });
+        try{
+            const { data: { results: movieResults } } = await moviesApi.search(searchTerm);
+            const { data: { results: tvResults } } = await tvApi.search(searchTerm);
+            this.setState({
+                movieResults,                                   // receive data by using API and setState to save data
+                tvResults,
+            })
+        } catch{
+            this.setState({
+                error: "Can't find results."})
+        } finally {
+            this.setState({
+                loading: false})
+        }
+    }
+    render() {
+        const { movieResults, tvResults, searchTerm, error, loading } = this.state;
+        return (
+            <SearchPresenter  movieResults={movieResults}  tvResults={tvResults}  searchTerm={searchTerm}  error={error}  loading={loading}
+                handleSubmit={this.handleSubmit}                // handleSubmit and updateTerm was maden here
+                updateTerm={this.updateTerm}
+            />
+        )
+    };
+}
+
+            /* child component */
+            const SearchPresenter = ({ movieResults, tvResults, loading, error, searchTerm, handleSubmit, updateTerm, }) => (
+            <Container>
+                <Form onSubmit={handleSubmit}>                          // this is how use function which transfered as a prop
+                <Input placeholder="Serach Movies or TV Shows..." value={searchTerm} onChange={updateTerm} />       // this is how use function which transfered as a prop
+                </Form>
+            {loading ? <Loader /> : (
+                <>
+                    {movieResults && movieResults.length > 0 && (
+                        <Section title="Movie Results">
+                            {movieResults.map(movie => (
+                                <Poster   key={movie.id}  id={movie.id}   title={movie.original_title}   imageUrl={movie.poster_path}   rating={movie.vote_average}
+                                    year={movie.release_date && movie.release_date.substring(0, 4)}  isMovie={true}
+                                />
+                            ))}
+                        </Section>
+                    )}
+                    {tvResults && tvResults.length > 0 && (
+                        <Section title="TV Show Results">
+                            {tvResults.map(show => (
+                                <Poster  key={show.id}  id={show.id}  title={show.original_name}  imageUrl={show.poster_path} 
+                                    rating={show.vote_average} year={show.frist_air_date && show.first_air_date.substring(0, 4)} 
+                                />
+                            ))}
+                        </Section>
+                    )}
+                    {error && <Message color="#e74c3c" text={error} />}
+                    {tvResults && movieResults && tvResults.length === 0 && movieResults.length === 0 && (
+                        <Message color="#95a5a6" text="Nothing Found" />
+                    )}
+                </>
+            )}
+            </Container>
+            );
