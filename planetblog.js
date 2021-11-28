@@ -137,7 +137,89 @@ const Header = () => {
     return(
         <>
             ...
-            <HeaderButton onClick={() => dispatch(cleanForm('user'))}>Logout</HeaderButton>         // use dispatch to redux Action
+            <HeaderButton onClick={() => dispatch(cleanForm('user'))}>Logout</HeaderButton>         // use dispatch to use redux Action directly
         </>
     )}
 
+
+/* use redux actions what received in props */
+const LoginForm = ({ form, onLogin, onChangeInput, onClean, }) => {
+    const onSubmit = e => {
+        e.preventDefault();
+        const { id, password } = form;              // get element what I need
+        onLogin({ id, password });                  // onLogin=loginForm (reducer), id & password what are needed and declared in auth store
+        onClean('login');                           // onClean=cleanForm (reducer)        
+    }
+    const onChange = e => { 
+        const { value, name } = e.target;
+        onChangeInput({                             // onChangeInput=changeInput (reducer)
+            form: 'login',
+            key: name,
+            value,
+         });
+    }
+    return(
+        <form onSubmit={onSubmit}>
+            <StyledInput name="id" placeholder="ID" onChange={onChange} value={form.id} />
+            <StyledInput name="password" placeholder="password" type="password" onChange={onChange} value={form.password} />
+            <ButtonWithMarginTop type="submit" orange fullWidth>LogIn</ButtonWithMarginTop>
+        </form>
+    )
+}
+
+
+/* using submit post action */
+const PostButtons = ({ title, body, tags, onPostWriting, onInitializeField, history }) => {
+    const user = useSelector(state => state.auth.user.id)
+    const date = new Date();
+    const id = Number(date)
+
+    const onSubmit = (title, body, tags) => {           // title, body, tags are given by props
+        onPostWriting({                                 // onPostWriting = postWriting reducer
+            title: title,
+            body: body,
+            tags: tags,
+            username: user,
+            publishedDate: date,
+            _id: id,
+        });
+        onInitializeField();                            // clean field after submit - initializeField reducer
+        history.push('/');
+    }
+}
+
+
+/* dangerouslySetInnerHTML */
+const sanitizedBody = sanitizeHtml(body);
+<PostContent dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
+
+
+/* set tags on local state and redux store state */
+const TagBox = ({ tags, onChangeTag }) => {
+    const [input, setInput] = useState('');                 // for onChange function
+    const [localTags, setLocalTags] = useState([]);         // local state of tags
+    
+    const onChange = e => {
+        setInput(e.target.value)
+    }
+
+    const onSubmit = (e) => {
+        e.preventDefault();
+        insertTag(input);                                   // add a tag what just typed => excute insertTag function
+        setInput('');
+    }
+
+    const insertTag = (tag) => {
+        if(!tag) return;
+        if(localTags.includes(tag)) return;
+        const newTag = [...localTags, tag];
+        setLocalTags(newTag);                               // save at local state
+        onChangeTag(newTag);                                // save at Redux State by using changeTag reducer
+    }
+
+    const onRemove = (id) => {    
+        const refreshTags = localTags.filter(t => t !== id);    // use filter to find the one and return without it
+        setLocalTags(refreshTags);
+        onChangeTag(refreshTags);
+    }
+}
