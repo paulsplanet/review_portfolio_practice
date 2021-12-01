@@ -113,4 +113,93 @@ function DetailProductPage (props) {
     )
 };
 
-export default DetailProductPage;
+
+/*  check box   */
+function CheckBox (props) {
+    const [checked, setChecked] = useState([]);
+    const handleToggle = (value) => {
+        const currentIndex = checked.indexOf(value);            // check the value is already there or not.
+        const newChecked = [...checked];
+        if (currentIndex === -1) {                              // value -1 means it is not selected yet.
+            newChecked.push(value)
+        } else {
+            newChecked.splice(currentIndex, 1)
+        }
+        setChecked(newChecked);                                 // save it to local value.
+        props.handleFilters(newChecked);
+}}
+
+
+/*  searchBox   */
+function SearchBox (props) {
+    const [searchTerm, setSearchTerm] = useState("")
+    const searchHandler = (e) => {
+        setSearchTerm(e.currentTarget.value);
+        props.refreshFunction(e.currentTarget.value);           
+    }
+    return (
+        <div>
+            <Search placeholder="input search text" onChange={searchHandler} style={{ width: 200 }} value={searchTerm} />
+        </div>
+    )
+}
+
+
+/*  landingPage */
+function LandingPage() {
+    ... local states ...
+    const [filters, setFilters] = useState({        // import { continents, price } from './Sections/Data';
+        continents: [],
+        price: [],
+    });
+    useEffect(() => {
+        let body = {
+            skip: Skip,                             // skip & limit decide how many products will be displayed
+            limit: limit,
+        }
+        getProducts(body);                          // when page rendered. need to bring products lists.    
+    }, [])
+    const getProducts = (body) => {
+        axios.post('/api/product/products', body)
+                .then(response => {
+                    if(response.data.success) {
+                        if (body.loadMore) {
+                            setProducts([...products, ...response.data.productInfo])        // save to local state
+                        } else {
+                            setProducts(response.data.productInfo)
+                        }
+                        setPostSize(response.data.postSize)                                 // also loca state
+                    } else {
+                        alert("failed to load products.")
+     }})    }
+    const loadMoreHandler = () => {
+        let skip = Skip + limit;                            // new skip to load more.
+        let body = {
+            skip: skip,                                     // skip is new skip
+            limit: limit,
+            loadMore: true,
+        };
+        getProducts(body);                                  // then excute getProducts function again.
+        setSkip(skip);                                      // save skip to local state 'skip'
+    }
+    const showFilteredResults = (filters) => {
+        let body ={
+            skip: 0,
+            limit: limit,
+            filters: filters,
+        }
+        getProducts(body);
+        setSkip(0);
+    }
+    const updateSearchTerm = (newSearchTerm) => {
+        let body = {
+            skip: 0,
+            limit: limit,
+            filters: filters,
+            searchTerm: newSearchTerm
+        }
+        setSkip(0);
+        setSearchTerm(newSearchTerm);
+        getProducts(body);                                  // for each actions. we make new 'body' by what I'm searching, then call getProducts function
+    }
+}
