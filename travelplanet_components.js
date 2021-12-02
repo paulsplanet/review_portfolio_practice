@@ -203,3 +203,98 @@ function LandingPage() {
         getProducts(body);                                  // for each actions. we make new 'body' by what I'm searching, then call getProducts function
     }
 }
+
+
+/* naviBar - rightMenu  */
+function RightMenu(props) {
+    const user = useSelector(state => state.user)   
+    const logoutHandler = () => {                           // even logout action use axios.get 
+      axios.get(`${USER_SERVER}/logout`).then(response => {
+        if (response.status === 200) {
+          props.history.push("/login");
+        } else {
+          alert('Log Out Failed')
+    } }); }; 
+    if (user.userData && !user.userData.isAuth) {           // return two different menu depends on the data.
+      return (
+        <Menu mode={props.mode}>
+          <Menu.Item key="mail">
+            <a href="/login">Signin</a>
+          </Menu.Item>
+          <Menu.Item key="app">
+            <a href="/register">Signup</a>
+          </Menu.Item>
+        </Menu>
+      )
+    } else {
+      return (
+        <Menu mode={props.mode}>
+          <Menu.Item key="history">
+            <a href="/history">History</a>
+          </Menu.Item>
+            {/*... more menus ... */}
+          <Menu.Item key="logout">
+            <a onClick={logoutHandler}>Logout</a>
+          </Menu.Item>
+        </Menu>
+      )
+    }
+  }
+
+
+/*  uploadProductPage   */
+function UploadProductPage(props) {
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [price, setPrice] = useState(0);
+    const [continent, setContinenet] = useState(1);
+    const [image, setImage] = useState([]);
+
+    const titleChangeHandler = (e) => {
+        setTitle(e.currentTarget.value);
+    }
+    // ... each state element functions - same as title ...
+    const updateImages = (newImages) => {
+        setImage(newImages);
+    }
+    const submitHandler = (e) => {                                          // this uploadProduct function
+        e.preventDefault();   
+        if (!title || !description || !price || !continent || !image) {     // check if all the rquirements are filled
+            return alert("You have to fill out all sections")
+        }
+                    // sending product data to server
+        const body = {
+            writer: props.user.userData._id,
+            title: title,
+            description: description,
+            price: price,
+            continents: continent,
+            images: image,
+        }
+        Axios.post("/api/product", body)                                    // set body data and use axios.post to sent it to server
+            .then(response => {
+                if(response.data.success) {
+                    alert("We uploaded your data successfully.")
+                    props.history.push('/');
+                } else {
+                    alert("We failed to upload your product.")
+                }
+            })
+    }
+    return(
+        <div style={{ maxWidth: '700px', margin: '2rem auto'}}>
+            <Form onSubmit={submitHandler}>
+                <FileUpload refreshFunction={updateImages} />
+                <br />
+                    {/* ... other tags of elements here ... */}
+                <br />
+                <select onChange={continentChangeHandler} value={continent}>
+                    {Continents.map(item => (
+                        <option key={item.key} value={item.key}>{item.value}</option>
+                    ))}
+                </select>
+                <Button type="submit" onClick={submitHandler}>submit</Button>
+            </Form>
+        </div>       
+    )
+}
