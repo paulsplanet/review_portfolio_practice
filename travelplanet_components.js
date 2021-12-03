@@ -147,7 +147,7 @@ function SearchBox (props) {
 
 /*  landingPage */
 function LandingPage() {
-    ... local states ...
+            {/* ... local states ...  */}
     const [filters, setFilters] = useState({        // import { continents, price } from './Sections/Data';
         continents: [],
         price: [],
@@ -298,3 +298,62 @@ function UploadProductPage(props) {
         </div>       
     )
 }
+
+
+/*  LoginPage   */
+function LoginPage(props) {
+    const dispatch = useDispatch();
+    const rememberMeChecked = localStorage.getItem("rememberMe") ? true : false;            // rememberMe was saved in localStorage
+    const [formErrorMessage, setFormErrorMessage] = useState('')
+    const [rememberMe, setRememberMe] = useState(rememberMeChecked)
+    const handleRememberMe = () => {
+      setRememberMe(!rememberMe)                    // yes or no click. save opposite value when clicked
+    };
+    const initialEmail = localStorage.getItem("rememberMe") ? localStorage.getItem("rememberMe") : '';      // bring saved email from localstorage if rememberMe value is true.
+    return (
+      <Formik
+        initialValues={{
+          email: initialEmail,
+          password: '',
+        }}
+        validationSchema={Yup.object().shape({
+          email: Yup.string()
+            .email('Email is invalid')
+            .required('Email is required'),
+          password: Yup.string()
+            .min(6, 'Password must be at least 6 characters')
+            .required('Password is required'),
+        })}
+        onSubmit={(values, { setSubmitting }) => {              // when clicked login button
+          setTimeout(() => {
+            let dataToSubmit = {
+              email: values.email,
+              password: values.password
+            };
+  
+            dispatch(loginUser(dataToSubmit))
+              .then(response => {
+                if (response.payload.loginSuccess) {
+                  window.localStorage.setItem('userId', response.payload.userId);
+                  if (rememberMe === true) {
+                    window.localStorage.setItem('rememberMe', values.id);
+                  } else {
+                    localStorage.removeItem('rememberMe');
+                  }
+                  props.history.push("/");
+                } else {
+                  setFormErrorMessage('Check out your Account or Password again')
+                }
+              })
+              .catch(err => {
+                setFormErrorMessage('Check out your Account or Password again')
+                setTimeout(() => {
+                  setFormErrorMessage("")
+                }, 3000);
+              });
+            setSubmitting(false);
+          }, 500);
+        }}
+      >
+      {/*   other components   */}   
+      </Formik> )  }
